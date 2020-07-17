@@ -340,9 +340,10 @@
                             makeent(3,3,"player",{})
                             px=3
                             py=3
-                            paritychallenge=false
-                            //uncomment the following line and then reset to enable parity challenge
-                            //paritychallenge=true
+                        break;
+                        case 80:
+                            paritychallenge=!paritychallenge
+                            turn({keyCode:82})
                         break;
                     }
                     if (px+dx<0||px+dx>49||py+dy<0||py+dy>49){
