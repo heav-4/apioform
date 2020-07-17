@@ -342,6 +342,9 @@
                             py=3
                         break;
                     }
+                    if (px+dx<0||px+dx>49||py+dy<0||py+dy>49){
+                        maketurn=false
+                    }
                     if (maketurn&&php>0){
                         
                         for (i in entities[px+" "+py]){
