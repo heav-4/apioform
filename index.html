@@ -13,6 +13,8 @@
                 var kills=0;*/
                 let frigidmode=false
                 let paritychallenge=false
+                let parityoverlay=false
+                let prevkilled=false // parity challenge thingy.
                 const solid={
                     "player":true,
                     "bee":true,
@@ -51,12 +53,8 @@
                         this.meta=meta;
                         this.cx=x;
                         this.cy=y;
-                        if (this.type=="bee"||this.type=="apioform"||this.type=="apiodiagoform"||this.type=="apiokinetoform"||this.type=="apiopyroform"||this.type=="cryoapioform"){
-                            this.meta.clock=0;
-                        }
-                        if (this.type=="apiopyroform"||this.type=="cryoapioform"){
-                            this.meta.cooldown=0
-                        }
+                        this.meta.clock=0;
+                        this.meta.cooldown=0
                         this.meta.frozen=0
                     }
                 }
@@ -217,6 +215,16 @@
                         case "player":
                             ctx.fillStyle="#000000"
                             ctx.fillRect(ent.cx*10,ent.cy*10,10,10)
+                            if (parityoverlay&&paritychallenge){
+                                ctx.fillStyle="#ffffff"
+                                ctx.textBaseline="middle"
+                                ctx.textAlign="center"
+                                ctx.font="10px monospace";
+                                if (ent.x%2==0&&ent.y%2==0) ctx.fillText("a",ent.cx*10+5,ent.cy*10+5)
+                                if (ent.x%2==1&&ent.y%2==0) ctx.fillText("b",ent.cx*10+5,ent.cy*10+5)
+                                if (ent.x%2==0&&ent.y%2==1) ctx.fillText("d",ent.cx*10+5,ent.cy*10+5)
+                                if (ent.x%2==1&&ent.y%2==1) ctx.fillText("c",ent.cx*10+5,ent.cy*10+5)
+                            }
                         break;
                         case "bee":
                             if (ent.meta.clock%2==0) ctx.fillStyle="#808020"
@@ -246,6 +254,20 @@
                         break;
                         case "apiopariform":
                             ctx.fillStyle="#808080"
+                            ctx.fillRect(ent.cx*10,ent.cy*10,10,10)
+                            if (parityoverlay&&paritychallenge){
+                                ctx.fillStyle="#ffffff"
+                                ctx.textBaseline="middle"
+                                ctx.textAlign="center"
+                                ctx.font="10px monospace";
+                                if (ent.x%2==0&&ent.y%2==0) ctx.fillText("a",ent.cx*10+5,ent.cy*10+5)
+                                if (ent.x%2==1&&ent.y%2==0) ctx.fillText("b",ent.cx*10+5,ent.cy*10+5)
+                                if (ent.x%2==0&&ent.y%2==1) ctx.fillText("d",ent.cx*10+5,ent.cy*10+5)
+                                if (ent.x%2==1&&ent.y%2==1) ctx.fillText("c",ent.cx*10+5,ent.cy*10+5)
+                            }
+                        break;
+                        case "apiocryokinetoform":
+                            ctx.fillStyle="#FFFFFF"
                             ctx.fillRect(ent.cx*10,ent.cy*10,10,10)
                         break;
                     }
@@ -340,10 +362,14 @@
                             makeent(3,3,"player",{})
                             px=3
                             py=3
+                            prevkilled=false
                         break;
                         case 80:
                             paritychallenge=!paritychallenge
                             turn({keyCode:82})
+                        break;
+                        case 79:
+                            parityoverlay=!parityoverlay
                         break;
                     }
                     if (px+dx<0||px+dx>49||py+dy<0||py+dy>49){
@@ -365,6 +391,7 @@
                                     for (var i=entities[nent].length-1;i>=0;i--){
                                         if (entities[nent][i].meta.dead!==undefined){
                                             entities[nent].splice(i,1)
+                                            prevkilled=true
                                         }
                                     }
                                 }
@@ -577,14 +604,18 @@
                             }
                         }
                         if (paritychallenge){
-                            while (true){
-                                let cx=Math.floor(Math.random()*48)+1
-                                let cy=Math.floor(Math.random()*48)+1
-                                let s=issolid(cx+" "+cy)
-                                if (!s){
-                                    makeent(cx,cy,"apiopariform",{})
-                                } else continue
-                                break
+                            if (prevkilled){
+                                prevkilled=false
+                            }else{
+                                while (true){
+                                    let cx=Math.floor(Math.random()*48)+1
+                                    let cy=Math.floor(Math.random()*48)+1
+                                    let s=issolid(cx+" "+cy)
+                                    if (!s){
+                                        makeent(cx,cy,"apiopariform",{})
+                                    } else continue
+                                    break
+                                }
                             }
                         }
                         if (php<=0||px<0||px>49||py<0||py>49){
