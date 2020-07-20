@@ -15,6 +15,7 @@
                 let paritychallenge=false
                 let parityoverlay=false
                 let prevkilled=false // parity challenge thingy.
+                if (localStorage.tutorial===undefined){localStorage.tutorial=true;}
                 const solid={
                     "player":true,
                     "bee":true,
@@ -53,7 +54,7 @@
                         this.meta=meta;
                         this.cx=x;
                         this.cy=y;
-                        this.meta.clock=0;
+                        this.meta.clock=this.meta.clock===undefined?0:this.meta.clock;
                         this.meta.cooldown=0
                         this.meta.frozen=0
                     }
@@ -363,6 +364,11 @@
                             px=3
                             py=3
                             prevkilled=false
+                            if (!paritychallenge){
+                                for (var i=0;i<14;i++){
+                                    try_spawn()
+                                }
+                            }
                         break;
                         case 80:
                             paritychallenge=!paritychallenge
@@ -565,33 +571,13 @@
                             }
                         }
                         attacks.forEach(call_turn)
-                        if (!frigidmode&&!paritychallenge&&((Math.random()<0.1&&kills<15)||(Math.random()<0.2&&kills>14)||(Math.random()<0.35&&kills>24))){
-                            while (true){
-                                let cx=Math.floor(Math.random()*48)+1
-                                let cy=Math.floor(Math.random()*48)+1
-                                let s=issolid(cx+" "+cy)
-                                if (!s){
-                                    
-                                    if (kills<5){
-                                        makeent(cx,cy,"bee",{})
-                                    }
-                                    if (kills>4&&kills<15){
-                                        makeent(cx,cy,some(["bee","bee","apioform","apioform","apiodiagoform"]),{})
-                                    }
-                                    if (kills>14&&kills<25){
-                                        makeent(cx,cy,some(["bee","apioform","apioform","apiodiagoform","apiokinetoform","apiokinetoform"]),{})
-                                    }
-                                    if (kills>24){
-                                        makeent(cx,cy,some(["apioform","apioform","apiodiagoform","apiodiagoform","apiokinetoform","apiokinetoform","apioform","apioform","apiodiagoform","apiodiagoform","apiokinetoform","apiokinetoform","apiopyroform"]),{})
-                                    }
-                                    if (kills>32){
-                                        makeent(cx,cy,some(["apioform","apiodiagoform","apioform","apiodiagoform","apioform","apiodiagoform","apiokinetoform","apiopyroform","cryoapioform","apiopariform","apiopariform"]),{})
-                                    }
-                                }
-                                if (Math.random()<0.1||s){continue;}
-                                break
-                            }
+                        if (localStorage.tutorial=="true"&&!frigidmode&&!paritychallenge&&((Math.random()<0.1&&kills<15)||(Math.random()<0.2&&kills>14)||(Math.random()<0.35&&kills>24))){
+                            try_spawn()
                         }
+                        if (localStorage.tutorial=="false"&&!frigidmode&&!paritychallenge&&(Math.random()<0.35)){
+                            try_spawn()
+                        }
+                        
                         if (frigidmode){
                             while (true){
                                 let cx=Math.floor(Math.random()*48)+1
@@ -628,8 +614,13 @@
                             }
                         }
                     }
+                    console.log(kills)
+                    if (localStorage.tutorial=="true"&&kills>30){
+                        localStorage.tutorial=false
+                        kills=0
+                    }
                     let k=document.getElementById("kills")
-                    k.innerHTML=`Kills: ${kills}`
+                    k.innerHTML=`Kills: ${paritychallenge?kills:(localStorage.tutorial=="true"?"[TUTORIAL]":kills)}`
                 }
                 function call_tick(a){
                     a.tick()
@@ -644,6 +635,33 @@
                         for (j in entities[i]){
                             render(entities[i][j])
                         }
+                    }
+                }
+                function try_spawn(){
+                    while (true){
+                        let cx=Math.floor(Math.random()*48)+1
+                        let cy=Math.floor(Math.random()*48)+1
+                        let s=issolid(cx+" "+cy)
+                        if (!s){
+                            if (localStorage.tutorial=="true"){
+                                if (kills<5){
+                                    makeent(cx,cy,"bee",{"clock":Math.floor(Math.random()*2)})
+                                }
+                                if (kills>4&&kills<15){
+                                    makeent(cx,cy,some(["bee","bee","apioform","apioform","apiodiagoform"]),{})
+                                }
+                                if (kills>14&&kills<25){
+                                    makeent(cx,cy,some(["bee","apioform","apioform","apiodiagoform","apiokinetoform","apiokinetoform"]),{})
+                                }
+                                if (kills>24){
+                                    makeent(cx,cy,some(["apioform","apioform","apiodiagoform","apiodiagoform","apiokinetoform","apiokinetoform","apioform","apioform","apiodiagoform","apiodiagoform","apiokinetoform","apiokinetoform","apiopyroform"]),{})
+                                }
+                            } else {
+                                makeent(cx,cy,some(["apioform","apiodiagoform","apioform","apiodiagoform","apioform","apiodiagoform","apiokinetoform","apiopyroform","cryoapioform","apiopariform","apiopariform"]),{})
+                            }
+                        }
+                        if (Math.random()<0.1||s){continue;}
+                        break
                     }
                 }
                 function spawneffect(e,x,y){
